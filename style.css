@@ -486,6 +486,9 @@ textarea:disabled {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-5);
+  > :first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .stat-card {
