@@ -31,36 +31,14 @@
       <section class="panel rules-panel">
         <div class="panel-heading">
           <div>
-            <h2>Rules profile</h2>
+            <h2>Rules status</h2>
             <p class="muted small">
-              Choose the profile that applies to this work. Mixed operations
-              need extra checks.
+              Assimilated rules / Goods vehicle over 3.5 tonnes
             </p>
           </div>
           <span class="pill">UK</span>
         </div>
-        <div class="form-grid">
-          <label
-            >Rule profile
-            <select id="ruleProfile">
-              <option value="assimilated">
-                UK assimilated / applicable EU journeys
-              </option>
-              <option value="domestic">GB domestic</option>
-              <option value="mixed">Mixed operation / check both</option>
-            </select>
-          </label>
-          <label
-            >Vehicle / operation
-            <select id="vehicleType">
-              <option>Goods vehicle over 3.5 tonnes</option>
-              <option>Goods vehicle 3.5 tonnes or under</option>
-              <option>Bus / coach</option>
-              <option>Other / exemption needs checking</option>
-            </select>
-          </label>
-        </div>
-        <p id="ruleNote" class="notice">
+        <p class="notice">
           Assimilated rules commonly apply to goods vehicles over 3.5 tonnes in
           the UK and on relevant EU journeys. Check vehicle, journey and
           exemptions.
@@ -109,7 +87,9 @@
             <div>
               <span class="stat-label">Current activity</span
               ><strong id="currentActivity">Not running</strong
-              ><span id="currentElapsed" class="muted">00h 00m elapsed</span>
+              ><span id="currentElapsed" class="muted"
+                >00h 00m 00s elapsed</span
+              >
             </div>
             <button id="stopBtn" class="button danger" disabled>
               Stop activity
@@ -188,16 +168,11 @@
               <strong>Break:</strong> normally at least 45 minutes after no more
               than 4h 30m driving; split-break rules may apply.
             </li>
-            <li>
-              <strong>GB domestic goods:</strong> commonly 10h daily driving and
-              11h duty in a working day, subject to detailed rules and
-              exemptions.
-            </li>
           </ul>
           <p class="notice warning">
-            A mixed operation can require both sets of rules and specific
-            calculations. Do not rely on this prototype as proof of compliance
-            or instead of tachograph / legally required records.
+            Check vehicle, journey and exemptions before relying on these
+            estimates. Do not use this prototype as proof of compliance or
+            instead of tachograph / legally required records.
           </p>
         </aside>
       </section>
@@ -241,13 +216,6 @@
             target="_blank"
             rel="noreferrer"
             >GOV.UK goods vehicle guidance</a
-          >
-          and
-          <a
-            href="https://www.gov.uk/drivers-hours/gb-domestic-rules"
-            target="_blank"
-            rel="noreferrer"
-            >GB domestic rules</a
           >.
         </p>
       </footer>
