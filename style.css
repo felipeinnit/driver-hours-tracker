@@ -13,6 +13,7 @@
   color: #14243b;
   background: #f4f7fb;
   font-synthesis: none;
+  font-size: 1rem;
 }
 body {
   margin: 0;
@@ -40,16 +41,12 @@ body {
 .brand small {
   display: block;
 }
-.brand strong {
-  font-size: 16px;
-}
+
 .brand small {
-  font-size: 12px;
   color: #b9c8dc;
   margin-top: 3px;
 }
 .privacy {
-  font-size: 12px;
   color: #d0dbea;
 }
 .container {
@@ -65,7 +62,6 @@ body {
   margin-bottom: 24px;
 }
 .eyebrow {
-  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.13em;
   color: #3976c7;
@@ -83,7 +79,6 @@ body {
   margin: 9px 0 0;
 }
 .small {
-  font-size: 12px;
   line-height: 1.5;
 }
 .panel,
@@ -102,7 +97,6 @@ body {
   margin: 0;
 }
 .panel h3 {
-  font-size: 14px;
   margin: 0 0 14px;
 }
 .panel-heading {
@@ -121,7 +115,6 @@ body {
   border-radius: 99px;
   background: #eaf3ff;
   color: #235da5;
-  font-size: 11px;
   font-weight: 750;
   white-space: nowrap;
 }
@@ -138,7 +131,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  font-size: 12px;
+
   font-weight: 700;
   color: #43536a;
 }
@@ -160,14 +153,17 @@ select:focus {
   box-shadow: 0 0 0 3px #4386e61b;
 }
 .notice {
+  display: block;
   background: #f0f6ff;
   border: 1px solid #dbe9ff;
   border-radius: 10px;
   padding: 11px 13px;
-  font-size: 12px;
   line-height: 1.55;
   color: #3d587a;
-  margin: 16px 0 0;
+  margin: 16px 0 10px;
+  width: fit-content;
+  text-decoration: underline;
+  cursor: pointer;
 }
 .notice.warning {
   background: #fff8e9;
@@ -186,7 +182,7 @@ select:focus {
 .stat-label {
   display: block;
   color: #6b7b91;
-  font-size: 12px;
+
   font-weight: 650;
   margin-bottom: 10px;
 }
@@ -198,7 +194,6 @@ select:focus {
 .stat-foot {
   display: block;
   color: #7a899d;
-  font-size: 11px;
   margin-top: 6px;
 }
 .progress {
@@ -295,11 +290,11 @@ select:focus {
   margin-top: 15px;
 }
 .button {
-  border: 0;
+  border: 2px solid;
   border-radius: 9px;
   padding: 11px 15px;
   font: inherit;
-  font-size: 12px;
+
   font-weight: 750;
   cursor: pointer;
   white-space: nowrap;
@@ -319,6 +314,7 @@ select:focus {
 .danger {
   background: #fff0f0;
   color: #b33e43;
+  border-color: #b33e43;
 }
 .text-button {
   background: transparent;
@@ -334,7 +330,6 @@ select:focus {
   border-radius: 10px;
   background: #f1f8f4;
   border: 1px solid #d6eee0;
-  font-size: 12px;
   line-height: 1.5;
   color: #286246;
 }
@@ -357,7 +352,6 @@ select:focus {
   padding-left: 18px;
   margin: 0;
   color: #5d6d82;
-  font-size: 12px;
   line-height: 1.65;
 }
 .guidance li {
@@ -372,13 +366,12 @@ select:focus {
 table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 12px;
+
   white-space: nowrap;
 }
 th {
   text-align: left;
   color: #74839a;
-  font-size: 11px;
   font-weight: 700;
   background: #f7f9fc;
 }
@@ -394,23 +387,27 @@ td:first-child {
   font-weight: 700;
   color: #20334d;
 }
+.edit-entry,
 .delete-entry {
   border: 0;
-  background: transparent;
-  color: #b33e43;
+  background: none;
   cursor: pointer;
   font-weight: 700;
+}
+.edit-entry {
+  color: #2869bd;
+}
+.delete-entry {
+  color: #b33e43;
 }
 .empty-state {
   text-align: center;
   padding: 22px;
   color: #8794a6;
-  font-size: 12px;
 }
 footer {
   text-align: center;
   color: #78879a;
-  font-size: 11px;
   padding: 8px 0 18px;
 }
 footer a {
@@ -424,6 +421,12 @@ dialog {
   width: calc(100% - 32px);
   box-shadow: 0 20px 70px #0e203b44;
 }
+#editDialog {
+  max-width: 560px;
+}
+#editDialog .form-grid {
+  margin-top: 16px;
+}
 dialog::backdrop {
   background: #0e203b66;
 }
@@ -431,7 +434,6 @@ dialog h3 {
   margin: 0 0 8px;
 }
 dialog p {
-  font-size: 13px;
   color: #6b7b91;
 }
 .dialog-actions {
@@ -439,6 +441,11 @@ dialog p {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 20px;
+}
+
+.edit-entry {
+  @extend .button;
+  @extend .secondary;
 }
 @media (max-width: 900px) {
   .stats-grid {
@@ -449,6 +456,9 @@ dialog p {
   }
 }
 @media (max-width: 560px) {
+  #editDialog .form-grid {
+    grid-template-columns: 1fr;
+  }
   .topbar {
     height: 62px;
     padding: 0 16px;
@@ -488,14 +498,13 @@ dialog p {
   .panel-heading {
     gap: 8px;
   }
-  .privacy {
-    font-size: 10px;
-  }
   .activity-buttons {
     gap: 8px;
   }
   .activity-button {
     padding: 9px;
-    font-size: 12px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }

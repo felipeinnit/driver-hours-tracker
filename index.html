@@ -30,19 +30,17 @@
 
       <section class="panel rules-panel">
         <div class="panel-heading">
-          <div>
-            <h2>Rules status</h2>
-            <p class="muted small">
-              Assimilated rules / Goods vehicle over 3.5 tonnes
-            </p>
-          </div>
+          <h2>Rules status</h2>
           <span class="pill">UK</span>
         </div>
-        <p class="notice">
+        <details>
+          <summary class="notice">
+            Assimilated rules / Goods vehicle over 3.5 tonnes
+          </summary>
           Assimilated rules commonly apply to goods vehicles over 3.5 tonnes in
           the UK and on relevant EU journeys. Check vehicle, journey and
           exemptions.
-        </p>
+        </details>
       </section>
 
       <section class="stats-grid" aria-label="Hour totals">
@@ -185,7 +183,7 @@
               Records are stored in this browser on this device.
             </p>
           </div>
-          <button id="clearBtn" class="button text-button">
+          <button id="clearBtn" class="button danger text-button">
             Clear history
           </button>
         </div>
@@ -229,6 +227,48 @@
           ><button id="confirmClear" class="button danger" value="confirm">
             Clear history
           </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="editDialog">
+      <form id="editEntryForm">
+        <h3>Edit activity</h3>
+        <div class="form-grid">
+          <label
+            >Activity<select id="editActivity" required>
+              <option>Driving</option>
+              <option>Other work</option>
+              <option>Period of availability</option>
+              <option>Break / rest</option>
+            </select></label
+          >
+          <label
+            >Start date & time<input
+              id="editStart"
+              type="datetime-local"
+              step="1"
+              required
+          /></label>
+          <label
+            >End date & time<input
+              id="editEnd"
+              type="datetime-local"
+              step="1"
+              required
+          /></label>
+          <label
+            >Note (optional)<input
+              id="editNote"
+              maxlength="120"
+              placeholder="e.g. depot, delivery"
+          /></label>
+        </div>
+        <p id="editFormMessage" class="small muted" role="status"></p>
+        <div class="dialog-actions">
+          <button id="cancelEditBtn" class="button secondary" type="button">
+            Cancel
+          </button>
+          <button class="button primary" type="submit">Save changes</button>
         </div>
       </form>
     </dialog>

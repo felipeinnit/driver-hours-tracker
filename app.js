@@ -214,7 +214,7 @@
     tbody.innerHTML = rows
       .map(
         (e) =>
-          `<tr><td>${escapeHtml(e.activity)}</td><td>${escapeHtml(dateTime(e.start))}</td><td>${escapeHtml(dateTime(e.end))}</td><td>${fmtElapsed(e)}</td><td>${escapeHtml(e.note || "—")}</td><td><button class="delete-entry" data-delete="${e.id}" aria-label="Delete activity">Delete</button></td></tr>`,
+          `<tr><td>${escapeHtml(e.activity)}</td><td>${escapeHtml(dateTime(e.start))}</td><td>${escapeHtml(dateTime(e.end))}</td><td>${fmtElapsed(e)}</td><td>${escapeHtml(e.note || "—")}</td><td><button class="edit-entry" data-edit="${escapeHtml(e.id)}" aria-label="Edit activity">Edit</button> <button class="delete-entry" data-delete="${escapeHtml(e.id)}" aria-label="Delete activity">Delete</button></td></tr>`,
       )
       .join("");
     $("emptyState").hidden = rows.length > 0;
@@ -309,11 +309,70 @@
     $("formMessage").textContent = "Activity saved on this device.";
     render();
   });
+  let editingEntryId = null;
   $("historyBody").addEventListener("click", (e) => {
-    const id = e.target.dataset.delete;
-    if (!id) return;
-    state.entries = state.entries.filter((entry) => entry.id !== id);
+    const button = e.target.closest("button[data-edit], button[data-delete]");
+    if (!button) return;
+
+    if (button.dataset.edit) {
+      const entry = state.entries.find(
+        (item) => item.id === button.dataset.edit,
+      );
+      if (!entry) return;
+      editingEntryId = entry.id;
+      $("editActivity").value = entry.activity;
+      $("editStart").value = localInputValue(new Date(entry.start));
+      $("editEnd").value = localInputValue(new Date(entry.end));
+      $("editNote").value = entry.note || "";
+      $("editFormMessage").textContent = "";
+      $("editDialog").showModal();
+      return;
+    }
+
+    state.entries = state.entries.filter(
+      (entry) => entry.id !== button.dataset.delete,
+    );
     persist();
+    render();
+  });
+  $("cancelEditBtn").addEventListener("click", () => {
+    $("editDialog").close();
+  });
+  $("editDialog").addEventListener("close", () => {
+    editingEntryId = null;
+  });
+  $("editEntryForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const entry = state.entries.find((item) => item.id === editingEntryId);
+    if (!entry) {
+      $("editFormMessage").textContent =
+        "This activity could not be found. Close this form and try again.";
+      return;
+    }
+
+    const startRaw = $("editStart").value;
+    const endRaw = $("editEnd").value;
+    const start = new Date(startRaw);
+    const end = new Date(endRaw);
+    if (
+      !startRaw ||
+      !endRaw ||
+      !Number.isFinite(start.getTime()) ||
+      !Number.isFinite(end.getTime()) ||
+      end <= start
+    ) {
+      $("editFormMessage").textContent =
+        "Enter a valid start and end time; the end must be after the start.";
+      return;
+    }
+
+    entry.activity = $("editActivity").value;
+    entry.start = start.toISOString();
+    entry.end = end.toISOString();
+    entry.note = $("editNote").value.trim();
+    persist();
+    editingEntryId = null;
+    $("editDialog").close();
     render();
   });
   $("clearBtn").addEventListener("click", () => $("confirmDialog").showModal());
@@ -361,7 +420,7 @@
   // Date fields default to the current local time rounded to the minute.
   const localInputValue = (date) => {
     const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return d.toISOString().slice(0, 16);
+    return d.toISOString().slice(0, 19);
   };
   $("entryStart").value = localInputValue(new Date(Date.now() - 60 * 60000));
   $("entryEnd").value = localInputValue(new Date());
