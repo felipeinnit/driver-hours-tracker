@@ -314,7 +314,7 @@ a:hover {
   min-width: 0;
   background: var(--color-surface);
   border: var(--border-width) solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-card);
 }
 
@@ -425,6 +425,17 @@ textarea:disabled {
    7. NOTICES AND STATUS MESSAGES
    ========================================================= */
 
+summary.notice {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+summary.notice:hover,
+summary.notice:focus {
+  border-color: var(--color-brand-600);
+}
+
 .notice {
   display: block;
   width: fit-content;
@@ -436,19 +447,12 @@ textarea:disabled {
   border: var(--border-width) solid var(--color-info-border);
   border-radius: var(--radius-md);
   line-height: var(--line-height-relaxed);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  cursor: pointer;
 }
 
 .notice.warning {
   color: var(--color-warning);
   background: var(--color-warning-bg);
   border-color: var(--color-warning-border);
-}
-
-.notice:hover {
-  border-color: var(--color-brand-600);
 }
 
 .alerts {
@@ -602,7 +606,7 @@ textarea:disabled {
   text-align: left;
   background: var(--color-surface);
   border: var(--border-width) solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-weight: var(--font-weight-bold);
   transition:
     border-color var(--motion-fast),
@@ -657,7 +661,7 @@ textarea:disabled {
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border: var(--border-width-strong) solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-normal);
   text-align: center;
