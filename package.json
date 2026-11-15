@@ -1,0 +1,19 @@
+{
+  "name": "driver-hours-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "generate-vapid-keys": "web-push generate-vapid-keys"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "web-push": "^3.6.7"
+  }
+}

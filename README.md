@@ -20,13 +20,34 @@ A small, responsive, client-side web app for recording driving, other work, avai
 
 GitLab Pages documentation: https://docs.gitlab.com/user/project/pages/
 
+GitLab Pages serves only the static tracker. Background push notifications require the Node server below; open the app from that server's HTTPS URL to use them.
+
+## Background push notifications
+
+The push server must stay running and the app must be served from the same HTTPS origin. A generic VPS can run the included Docker image:
+
+1. Generate VAPID keys with `npm run generate-vapid-keys`.
+2. Copy `.env.example` to `.env`, add the generated public and private keys, and set `VAPID_SUBJECT` to a contact email.
+3. Build and run the image with a persistent data volume:
+
+   ```sh
+   docker build -t driver-hours-tracker .
+   docker run -d --restart unless-stopped --name driver-hours-tracker \
+     -p 8080:8080 --env-file .env \
+     -v driver-hours-data:/app/data driver-hours-tracker
+   ```
+
+4. Put the server behind an HTTPS reverse proxy and use that HTTPS address on the phone. Keep `.env` private and preserve the data volume; it contains push subscriptions and test state.
+
+Selecting **Start background notification test** sends a push immediately and then every 15 seconds until stopped. Push services and mobile operating systems may delay or throttle delivery. The VPS must remain online; a local development server cannot deliver while the computer is off.
+
 ## Storage and privacy
 
 Activity history is stored in `localStorage` in the current browser on the current device. It is not synced between devices and can be lost if browser site data is cleared. Use **Export CSV** for a backup. Do not enter sensitive personal information into notes.
 
 ## Mobile installation and notification test
 
-The site must be served over HTTPS for service-worker notifications. On iPhone or iPad, open it in Safari, use **Share > Add to Home Screen**, then open the installed app and allow notifications. The 15-second test is driven by the open page and may be throttled when backgrounded; reliable delivery while closed or suspended requires a push backend.
+On iPhone or iPad, open the HTTPS app in Safari, use **Share > Add to Home Screen**, then open the installed app and allow notifications. Background delivery depends on the always-on push server and can still be delayed by the browser or phone.
 
 ## Important limitations
 

@@ -5,7 +5,7 @@ pages:
   stage: deploy
   script:
     - mkdir -p public
-    - cp index.html style.css app.js public/
+    - cp index.html style.css app.js manifest.json sw.js icon-192.png icon-512.png public/
   pages: true
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

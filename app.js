@@ -4,8 +4,9 @@
   const $ = (id) => document.getElementById(id);
   let state = loadState();
   let tickHandle = null;
-  let notificationTestHandle = null;
+  let notificationTestActive = false;
   let notificationTestRegistration = null;
+  let notificationTestSubscription = null;
 
   const isIOS =
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -357,39 +358,73 @@
   });
   const notificationTestBtn = $("notificationTestBtn");
   const notificationTestStatus = $("notificationTestStatus");
-  function stopNotificationTest(message) {
-    if (notificationTestHandle) clearInterval(notificationTestHandle);
-    notificationTestHandle = null;
-    notificationTestRegistration = null;
-    notificationTestBtn.textContent = "Start 15-second notification test";
-    if (message) notificationTestStatus.textContent = message;
+  function setNotificationTestActive(active, message) {
+    notificationTestActive = active;
+    notificationTestBtn.textContent = active
+      ? "Stop background notification test"
+      : "Start background notification test";
+    notificationTestStatus.textContent = message;
   }
-  async function sendTestNotification() {
+  async function apiRequest(path, options = {}) {
+    const response = await fetch(path, options);
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || `Request failed (${response.status}).`);
+    }
+    return result;
+  }
+  function applicationServerKey(value) {
+    const padding = "=".repeat((4 - (value.length % 4)) % 4);
+    const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+    return Uint8Array.from(atob(base64), (character) =>
+      character.charCodeAt(0),
+    );
+  }
+  async function pushApiRequest(path, body) {
+    return apiRequest(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+  async function restoreNotificationTest() {
+    if (!window.isSecureContext || !("serviceWorker" in navigator)) return;
     try {
-      await notificationTestRegistration.showNotification(
-        "Driver Hours Tracker test",
-        {
-          body: `Test notification sent at ${new Date().toLocaleTimeString()}`,
-          tag: "driver-hours-notification-test",
-          renotify: true,
-        },
+      notificationTestRegistration =
+        await navigator.serviceWorker.getRegistration();
+      if (!notificationTestRegistration?.pushManager) return;
+      notificationTestSubscription =
+        await notificationTestRegistration.pushManager.getSubscription();
+      if (!notificationTestSubscription) return;
+      const { active } = await pushApiRequest(
+        "/api/test/status",
+        notificationTestSubscription.toJSON(),
       );
-      return true;
+      setNotificationTestActive(
+        active,
+        active
+          ? "Background test is running every 15 seconds. Push delivery may be delayed by the browser or phone."
+          : "Notifications are off.",
+      );
     } catch (error) {
-      stopNotificationTest(`Could not send notification: ${error.message}`);
-      return false;
+      notificationTestStatus.textContent =
+        `Could not check the push server: ${error.message}`;
     }
   }
   notificationTestBtn.addEventListener("click", async () => {
-    if (notificationTestHandle) {
-      stopNotificationTest("Notification test stopped.");
-      return;
-    }
     notificationTestBtn.disabled = true;
     try {
+      if (notificationTestActive) {
+        await pushApiRequest(
+          "/api/test/stop",
+          notificationTestSubscription.toJSON(),
+        );
+        setNotificationTestActive(false, "Background test stopped.");
+        return;
+      }
       if (!("Notification" in window) || !("serviceWorker" in navigator)) {
         notificationTestStatus.textContent =
-          "This browser does not support service-worker notifications.";
+          "This browser does not support push notifications.";
         return;
       }
       if (!window.isSecureContext) {
@@ -408,21 +443,37 @@
       }
       notificationTestRegistration =
         await navigator.serviceWorker.register("./sw.js");
-      await navigator.serviceWorker.ready;
-      if (!(await sendTestNotification())) return;
-      notificationTestHandle = setInterval(() => {
-        void sendTestNotification();
-      }, 15000);
-      notificationTestBtn.textContent = "Stop notification test";
-      notificationTestStatus.textContent =
-        "Test started; notifications repeat every 15 seconds while this page is open.";
+      notificationTestRegistration = await navigator.serviceWorker.ready;
+      const { publicKey } = await apiRequest("/api/vapid-public-key");
+      if (!publicKey) throw new Error("The push server has no VAPID public key.");
+      if (!notificationTestRegistration.pushManager) {
+        throw new Error("This browser does not support push subscriptions.");
+      }
+      notificationTestSubscription =
+        await notificationTestRegistration.pushManager.getSubscription();
+      if (!notificationTestSubscription) {
+        notificationTestSubscription =
+          await notificationTestRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey(publicKey),
+          });
+      }
+      await pushApiRequest(
+        "/api/test/start",
+        notificationTestSubscription.toJSON(),
+      );
+      setNotificationTestActive(
+        true,
+        "Background test started. The server sends every 15 seconds; delivery may be delayed by the browser or phone.",
+      );
     } catch (error) {
       notificationTestStatus.textContent =
-        `Could not start notification test: ${error.message}`;
+        `Could not start background test: ${error.message}`;
     } finally {
       notificationTestBtn.disabled = false;
     }
   });
+  void restoreNotificationTest();
   $("entryForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const activity = $("entryActivity").value,
@@ -577,6 +628,5 @@
   tickHandle = setInterval(render, 1000);
   window.addEventListener("beforeunload", () => {
     if (tickHandle) clearInterval(tickHandle);
-    if (notificationTestHandle) clearInterval(notificationTestHandle);
   });
 })();
