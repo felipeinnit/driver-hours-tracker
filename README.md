@@ -26,7 +26,7 @@ GitLab Pages serves only the static tracker. Background push notifications requi
 
 The push server must stay running and the app must be served from the same HTTPS origin. A generic VPS can run the included Docker image:
 
-1. Generate VAPID keys with `npm run generate-vapid-keys`.
+1. Run `npm ci`, then generate VAPID keys with `npm run generate-vapid-keys`. Generate them once and keep the same keys for future deployments.
 2. Copy `.env.example` to `.env`, add the generated public and private keys, and set `VAPID_SUBJECT` to a contact email.
 3. Build and run the image with a persistent data volume:
 
@@ -37,7 +37,7 @@ The push server must stay running and the app must be served from the same HTTPS
      -v driver-hours-data:/app/data driver-hours-tracker
    ```
 
-4. Put the server behind an HTTPS reverse proxy and use that HTTPS address on the phone. Keep `.env` private and preserve the data volume; it contains push subscriptions and test state.
+4. Put the server behind an HTTPS reverse proxy and use that HTTPS address on the phone. Keep `.env` private and preserve the data volume; it contains push subscriptions and test state. The VAPID private key must never be committed or shared.
 
 Selecting **Start background notification test** sends a push immediately and then every 15 seconds until stopped. Push services and mobile operating systems may delay or throttle delivery. The VPS must remain online; a local development server cannot deliver while the computer is off.
 

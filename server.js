@@ -23,6 +23,7 @@ webPush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 
 const subscriptions = new Map();
 const app = express();
+let saveQueue = Promise.resolve();
 const staticFiles = new Map([
   ["/", "index.html"],
   ["/index.html", "index.html"],
@@ -102,14 +103,18 @@ function readSubscription(value) {
 }
 
 async function saveSubscriptions() {
-  await mkdir(dataDirectory, { recursive: true });
-  const temporaryFile = `${subscriptionsFile}.tmp`;
-  await writeFile(
-    temporaryFile,
-    JSON.stringify([...subscriptions.values()]),
-    { mode: 0o600 },
-  );
-  await rename(temporaryFile, subscriptionsFile);
+  const write = saveQueue.then(async () => {
+    await mkdir(dataDirectory, { recursive: true });
+    const temporaryFile = `${subscriptionsFile}.tmp`;
+    await writeFile(
+      temporaryFile,
+      JSON.stringify([...subscriptions.values()]),
+      { mode: 0o600 },
+    );
+    await rename(temporaryFile, subscriptionsFile);
+  });
+  saveQueue = write.catch(() => {});
+  await write;
 }
 
 async function loadSubscriptions() {

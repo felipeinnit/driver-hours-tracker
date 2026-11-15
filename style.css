@@ -143,6 +143,7 @@ body {
   min-height: 100vh;
   margin: 0;
   line-height: var(--line-height-normal);
+  overflow-x: hidden;
 }
 
 button,
@@ -150,6 +151,7 @@ input,
 select,
 textarea {
   font: inherit;
+  max-width: 100%;
 }
 
 button,
