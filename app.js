@@ -619,8 +619,10 @@
   });
   // Date fields default to the current local time rounded to the minute.
   const localInputValue = (date) => {
-    const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return d.toISOString().slice(0, 19);
+    const rounded = new Date(date.getTime());
+    rounded.setSeconds(0, 0);
+    const d = new Date(rounded.getTime() - rounded.getTimezoneOffset() * 60000);
+    return d.toISOString().slice(0, 16);
   };
   $("entryStart").value = localInputValue(new Date(Date.now() - 60 * 60000));
   $("entryEnd").value = localInputValue(new Date());
