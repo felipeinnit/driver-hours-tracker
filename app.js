@@ -273,6 +273,11 @@
     .forEach((btn) =>
       btn.addEventListener("click", () => startActivity(btn.dataset.activity)),
     );
+  $("menuBtn").addEventListener("click", () => {
+    const expanded = $("menuBtn").getAttribute("aria-expanded") === "true";
+    $("menuBtn").setAttribute("aria-expanded", String(!expanded));
+    $("menuItem").hidden = expanded;
+  });
   $("stopBtn").addEventListener("click", () => stopActivity());
   $("entryForm").addEventListener("submit", (e) => {
     e.preventDefault();

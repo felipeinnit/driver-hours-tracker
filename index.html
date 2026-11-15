@@ -11,21 +11,88 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-icon">▰</span>
-        <div><strong>Driver Hours</strong><small>UK tracker</small></div>
+        <div><strong>Pac's driver hours</strong><small>UK tracker</small></div>
       </div>
-      <span class="privacy">Saved on this device</span>
+      <div class="menu-controls">
+        <button
+          class="button secondary"
+          id="menuBtn"
+          type="button"
+          aria-expanded="false"
+          aria-controls="menuItem"
+        >
+          Menu
+        </button>
+        <div class="menuItem" id="menuItem" hidden>
+          <button id="exportBtn" class="button secondary">Export CSV</button>
+
+          <div class="rules-panel">
+            <details>
+              <summary class="notice">Quick guidance</summary>
+              <ul class="guidance">
+                <li>
+                  <strong>Assimilated:</strong> commonly 9h daily driving (10h
+                  up to twice in a fixed week), 56h in a fixed week and 90h over
+                  two consecutive weeks.
+                </li>
+                <li>
+                  <strong>Break:</strong> normally at least 45 minutes after no
+                  more than 4h 30m driving; split-break rules may apply.
+                </li>
+              </ul>
+            </details>
+            <details>
+              <summary class="notice">
+                Assimilated rules / Goods vehicle over 3.5 tonnes
+              </summary>
+              Assimilated rules commonly apply to goods vehicles over 3.5 tonnes
+              in the UK and on relevant EU journeys. Check vehicle, journey and
+              exemptions.
+            </details>
+          </div>
+
+          <span class="privacy">Saved on this device</span>
+        </div>
+      </div>
     </header>
     <main class="container">
-      <section class="intro">
-        <div>
-          <p class="eyebrow">DRIVER WORKSPACE</p>
-          <h1>Driver hours tracker</h1>
-          <p class="muted">
-            Log activity, review totals, and keep an eye on important
-            thresholds.
-          </p>
+      <section>
+        <div class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Activity</h2>
+            </div>
+            <span id="liveStatus" class="pill neutral">Not running</span>
+          </div>
+          <div class="current-activity">
+            <div>
+              <strong id="currentActivity">Not running</strong
+              ><span id="currentElapsed" class="muted"
+                >00h 00m 00s elapsed</span
+              >
+            </div>
+            <button id="stopBtn" class="button danger" disabled>
+              Stop activity
+            </button>
+          </div>
+          <div class="activity-buttons">
+            <button class="activity-button driving" data-activity="Driving">
+              <span>↗</span>Driving
+            </button>
+            <button class="activity-button work" data-activity="Other work">
+              <span>▤</span>Other work
+            </button>
+            <button
+              class="activity-button availability"
+              data-activity="Period of availability"
+            >
+              <span>◷</span>Period of availability
+            </button>
+            <button class="activity-button rest" data-activity="Break / rest">
+              <span>Ⅱ</span>Break / rest
+            </button>
+          </div>
         </div>
-        <button id="exportBtn" class="button secondary">Export CSV</button>
       </section>
 
       <section class="stats-grid" aria-label="Hour totals">
@@ -67,44 +134,6 @@
 
       <section class="main-grid">
         <div class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Log activity</h2>
-              <p class="muted small">
-                Use the start/stop controls or add a completed entry.
-              </p>
-            </div>
-            <span id="liveStatus" class="pill neutral">Not running</span>
-          </div>
-          <div class="current-activity">
-            <div>
-              <span class="stat-label">Current activity</span
-              ><strong id="currentActivity">Not running</strong
-              ><span id="currentElapsed" class="muted"
-                >00h 00m 00s elapsed</span
-              >
-            </div>
-            <button id="stopBtn" class="button danger" disabled>
-              Stop activity
-            </button>
-          </div>
-          <div class="activity-buttons">
-            <button class="activity-button driving" data-activity="Driving">
-              <span>↗</span>Driving
-            </button>
-            <button class="activity-button work" data-activity="Other work">
-              <span>▤</span>Other work
-            </button>
-            <button
-              class="activity-button availability"
-              data-activity="Period of availability"
-            >
-              <span>◷</span>Period of availability
-            </button>
-            <button class="activity-button rest" data-activity="Break / rest">
-              <span>Ⅱ</span>Break / rest
-            </button>
-          </div>
           <form id="entryForm" class="entry-form">
             <h3>Add a past activity</h3>
             <div class="form-grid">
@@ -141,33 +170,6 @@
             <p id="formMessage" class="small muted" role="status"></p>
           </form>
         </div>
-
-        <aside class="panel">
-          <h2>Threshold checks</h2>
-          <p class="muted small">
-            Based on logged entries only. These are prompts, not a legal
-            compliance decision.
-          </p>
-          <div id="alerts" class="alerts"></div>
-          <div class="divider"></div>
-          <h3>Quick guidance</h3>
-          <ul class="guidance">
-            <li>
-              <strong>Assimilated:</strong> commonly 9h daily driving (10h up to
-              twice in a fixed week), 56h in a fixed week and 90h over two
-              consecutive weeks.
-            </li>
-            <li>
-              <strong>Break:</strong> normally at least 45 minutes after no more
-              than 4h 30m driving; split-break rules may apply.
-            </li>
-          </ul>
-          <p class="notice warning">
-            Check vehicle, journey and exemptions before relying on these
-            estimates. Do not use this prototype as proof of compliance or
-            instead of tachograph / legally required records.
-          </p>
-        </aside>
       </section>
 
       <section class="panel history-panel">
@@ -202,20 +204,17 @@
         </p>
       </section>
 
-      <section class="panel rules-panel">
-        <div class="panel-heading">
-          <h2>Rules status</h2>
-          <span class="pill">UK</span>
-        </div>
-        <details>
-          <summary class="notice">
-            Assimilated rules / Goods vehicle over 3.5 tonnes
-          </summary>
-          Assimilated rules commonly apply to goods vehicles over 3.5 tonnes in
-          the UK and on relevant EU journeys. Check vehicle, journey and
-          exemptions.
-        </details>
+      <section class="panel">
+        <h2>Threshold checks</h2>
+
+        <p class="muted small">
+          Based on logged entries only. These are prompts, not a legal
+          compliance decision.
+        </p>
+        <div id="alerts" class="alerts"></div>
+        <div class="divider"></div>
       </section>
+
       <footer>
         <p>
           Prototype for personal tracking. Confirm applicable rules using
