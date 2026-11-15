@@ -37,7 +37,15 @@
                 </li>
                 <li>
                   <strong>Break:</strong> normally at least 45 minutes after no
-                  more than 4h 30m driving; split-break rules may apply.
+                  more than 4h 30m driving; it can be split into 15 minutes
+                  followed by 30 minutes.
+                </li>
+                <li>
+                  <strong>Working time:</strong> driving and other work count;
+                  breaks and periods of availability do not. Do not work more
+                  than 6 consecutive hours without a break. For 6 to 9 hours
+                  worked, take at least 30 minutes of breaks; over 9 hours, take
+                  at least 45 minutes. Each break must be at least 15 minutes.
                 </li>
               </ul>
             </details>
@@ -58,22 +66,13 @@
     <main class="container">
       <section>
         <div class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Activity</h2>
-            </div>
-            <span id="liveStatus" class="pill neutral">Not running</span>
-          </div>
           <div class="current-activity">
             <div>
-              <strong id="currentActivity">Not running</strong
+              <strong id="currentActivity">Activity not running</strong
               ><span id="currentElapsed" class="muted"
                 >00h 00m 00s elapsed</span
               >
             </div>
-            <button id="stopBtn" class="button danger" disabled>
-              Stop activity
-            </button>
           </div>
           <div class="activity-buttons">
             <button class="activity-button driving" data-activity="Driving">
@@ -97,16 +96,28 @@
 
       <section class="stats-grid" aria-label="Hour totals">
         <article class="stat-card">
-          <span class="stat-label">Driving since qualifying break</span
-          ><strong id="sinceBreak">0h 00m</strong
-          ><span class="stat-foot">Assimilated guide threshold: 4h 30m</span>
+          <span class="stat-label">Remaining drive to break</span>
+          <strong id="sinceBreak">0h 00m</strong>
+          <span class="stat-foot">Assimilated guide threshold: 4h 30m</span>
           <div class="progress"><span id="breakProgress"></span></div>
         </article>
 
         <article class="stat-card">
-          <span class="stat-label">Driving today</span
-          ><strong id="todayDriving">0h 00m</strong
-          ><span id="dailyLimitLabel" class="stat-foot">Guide limit: 9h</span>
+          <span class="stat-label">Work time until break</span>
+          <strong id="todayWorked">0h 00m</strong>
+          <span class="stat-foot"
+            >Driving and other work count. Breaks and availability pause the
+            countdown.</span
+          >
+          <div class="progress"><span id="todayWorkedProgress"></span></div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Worked today</span>
+          <strong id="todayWorkedTotal">0h 00m</strong>
+          <span id="dailyLimitLabel" class="stat-foot"
+            >Breaks: 30m at 6–9h worked; 45m over 9h</span
+          >
           <div class="progress"><span id="dailyProgress"></span></div>
         </article>
 
@@ -115,13 +126,6 @@
           ><strong id="weekDriving">0h 00m</strong
           ><span class="stat-foot">Assimilated guide limit: 56h</span>
           <div class="progress"><span id="weekProgress"></span></div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Driving over 2 weeks</span
-          ><strong id="twoWeekDriving">0h 00m</strong
-          ><span class="stat-foot">Assimilated guide limit: 90h</span>
-          <div class="progress"><span id="twoWeekProgress"></span></div>
         </article>
 
         <article class="stat-card">

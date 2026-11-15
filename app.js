@@ -76,11 +76,11 @@
       });
     return all;
   }
-  function totalFor(list, activity, from, to) {
+  function totalFor(list, activities, from, to) {
     return list
       .filter(
         (e) =>
-          e.activity === activity &&
+          activities.includes(e.activity) &&
           new Date(e.start) < to &&
           new Date(e.end || Date.now()) > from,
       )
@@ -101,78 +101,122 @@
     const weekStart = mondayOf(now);
     const nextWeek = new Date(weekStart);
     nextWeek.setDate(nextWeek.getDate() + 7);
-    const priorWeek = new Date(weekStart);
-    priorWeek.setDate(priorWeek.getDate() - 7);
     const twoWeekStart = new Date(weekStart);
     twoWeekStart.setDate(twoWeekStart.getDate() - 7);
-    const drive = "Driving";
-    const today = totalFor(all, drive, todayStart, new Date(now.getTime() + 1));
-    const week = totalFor(all, drive, weekStart, nextWeek);
+    const todayEnd = new Date(now.getTime() + 1);
+    const todayDriving = totalFor(all, ["Driving"], todayStart, todayEnd);
+    const todayWorkedTotal = totalFor(
+      all,
+      ["Driving", "Other work"],
+      todayStart,
+      todayEnd,
+    );
+    const qualifyingBreaksToday = all.filter(
+      (e) => e.activity === "Break / rest" && duration(e, now.getTime()) >= 15,
+    );
+    const todayBreaks = totalFor(
+      qualifyingBreaksToday,
+      ["Break / rest"],
+      todayStart,
+      todayEnd,
+    );
+    const week = totalFor(all, ["Driving"], weekStart, nextWeek);
     const twoWeek = totalFor(
       all,
-      drive,
+      ["Driving"],
       twoWeekStart,
-      new Date(now.getTime() + 1),
+      todayEnd,
     );
-    // Driving since latest completed qualifying break is an estimate; split breaks and rest rules need full context.
+    const todayStartMs = todayStart.getTime();
+    const nowMs = now.getTime();
     const chronological = all
-      .slice()
+      .filter(
+        (e) =>
+          new Date(e.start) < todayEnd &&
+          new Date(e.end || nowMs) > todayStart,
+      )
       .sort((a, b) => new Date(a.start) - new Date(b.start));
     let sinceBreak = 0;
+    let workSinceBreak = 0;
+    let firstSplitBreakTaken = false;
     for (const e of chronological) {
-      if (e.activity === "Break / rest" && duration(e) >= 45) sinceBreak = 0;
-      else if (e.activity === drive) sinceBreak += duration(e);
+      const start = Math.max(new Date(e.start).getTime(), todayStartMs);
+      const end = Math.min(new Date(e.end || nowMs).getTime(), nowMs);
+      const elapsed = minutes(end - start);
+      if (e.activity === "Break / rest") {
+        if (elapsed >= 15) workSinceBreak = 0;
+        if (elapsed >= 45 || (elapsed >= 30 && firstSplitBreakTaken)) {
+          sinceBreak = 0;
+          firstSplitBreakTaken = false;
+        } else if (elapsed >= 15) {
+          firstSplitBreakTaken = true;
+        }
+      } else if (e.activity === "Driving") {
+        sinceBreak += elapsed;
+        workSinceBreak += elapsed;
+      } else if (e.activity === "Other work") {
+        workSinceBreak += elapsed;
+      }
     }
     return {
-      today,
+      todayDriving,
+      todayWorkedTotal,
+      todayBreaks,
       week,
       twoWeek,
       sinceBreak,
-      priorWeek,
+      workSinceBreak,
     };
   }
   function render() {
     const now = Date.now();
     const t = totals();
-    $("todayDriving").textContent = fmt(t.today);
+    const driveTimeRemaining = Math.max(0, 270 - t.sinceBreak);
+    const workTimeRemaining = Math.max(0, 360 - t.workSinceBreak);
+    $("todayWorked").textContent = fmt(workTimeRemaining);
+    $("todayWorkedTotal").textContent = fmt(t.todayWorkedTotal);
     $("weekDriving").textContent = fmt(t.week);
     $("twoWeekDriving").textContent = fmt(t.twoWeek);
-    $("sinceBreak").textContent = fmt(t.sinceBreak);
-    const dailyLimit = 540;
-    $("dailyLimitLabel").textContent =
-      "Assimilated guide: 9h (10h up to twice/fixed week)";
+    $("sinceBreak").textContent = fmt(driveTimeRemaining);
     $("dailyProgress").style.width =
-      Math.min(100, (t.today / dailyLimit) * 100) + "%";
+      Math.min(100, (t.todayWorkedTotal / 540) * 100) + "%";
     $("weekProgress").style.width = Math.min(100, (t.week / 3360) * 100) + "%";
     $("twoWeekProgress").style.width =
       Math.min(100, (t.twoWeek / 5400) * 100) + "%";
     $("breakProgress").style.width =
-      Math.min(100, (t.sinceBreak / 270) * 100) + "%";
+      Math.min(100, (driveTimeRemaining / 270) * 100) + "%";
+    $("todayWorkedProgress").style.width =
+      Math.min(100, (workTimeRemaining / 360) * 100) + "%";
+    $("dailyLimitLabel").textContent =
+      "Breaks: 30m at 6–9h worked; 45m over 9h";
+    const liveStatus = $("liveStatus");
     if (state.active) {
       $("currentActivity").textContent = state.active.activity;
       $("currentElapsed").textContent =
         fmtElapsed(state.active, now) + " elapsed";
-      $("liveStatus").textContent = "Activity running";
-      $("liveStatus").className = "pill";
-      $("stopBtn").disabled = false;
+      if (liveStatus) {
+        liveStatus.textContent = "Activity running";
+        liveStatus.className = "pill";
+      }
     } else {
       $("currentActivity").textContent = "Not running";
       $("currentElapsed").textContent = "00h 00m 00s elapsed";
-      $("liveStatus").textContent = "Not running";
-      $("liveStatus").className = "pill neutral";
-      $("stopBtn").disabled = true;
+      if (liveStatus) {
+        liveStatus.textContent = "Not running";
+        liveStatus.className = "pill neutral";
+      }
     }
     renderAlerts(t);
     renderHistory();
   }
   function renderAlerts(t) {
     const alerts = [];
-    if (t.today >= 540)
+    if (t.todayDriving >= 540)
       alerts.push([
         "warn",
         "Daily assimilated driving guide limit reached (9h). A permitted 10h extension may apply on no more than two days in a fixed week.",
       ]);
-    else if (t.today >= 480)
+    else if (t.todayDriving >= 480)
       alerts.push([
         "warn",
         "Approaching 9 hours of driving today. Check whether an extension is available and permitted.",
@@ -184,10 +228,28 @@
         "warn",
         "90-hour two-consecutive-week driving guide limit reached.",
       ]);
+    if (t.workSinceBreak >= 360)
+      alerts.push([
+        "warn",
+        "6 consecutive hours of working time reached. Take a break now. If total work today is 6–9 hours, breaks must total at least 30 minutes; over 9 hours, at least 45 minutes. Each break must be at least 15 minutes.",
+      ]);
+    else if (t.workSinceBreak >= 300)
+      alerts.push([
+        "warn",
+        "Approaching 6 consecutive hours of working time. Take a break by 6 hours.",
+      ]);
+    if (t.todayWorkedTotal >= 360) {
+      const requiredBreak = t.todayWorkedTotal > 540 ? 45 : 30;
+      if (t.todayBreaks < requiredBreak)
+        alerts.push([
+          "warn",
+          `Working time today requires at least ${requiredBreak} minutes of breaks; qualifying breaks must each be at least 15 minutes.`,
+        ]);
+    }
     if (t.sinceBreak >= 270)
       alerts.push([
         "warn",
-        "4h 30m driving threshold reached. Check break requirements immediately.",
+        "4h 30m driving threshold reached. Take a 45-minute break, or split it into 15 minutes followed by 30 minutes.",
       ]);
     else if (t.sinceBreak >= 240)
       alerts.push([
@@ -278,7 +340,6 @@
     $("menuBtn").setAttribute("aria-expanded", String(!expanded));
     $("menuItem").hidden = expanded;
   });
-  $("stopBtn").addEventListener("click", () => stopActivity());
   $("entryForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const activity = $("entryActivity").value,
