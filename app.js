@@ -4,6 +4,7 @@
   const $ = (id) => document.getElementById(id);
   let state = loadState();
   let tickHandle = null;
+  let notificationTestHandle = null;
 
   function loadState() {
     try {
@@ -340,6 +341,64 @@
     $("menuBtn").setAttribute("aria-expanded", String(!expanded));
     $("menuItem").hidden = expanded;
   });
+  const notificationTestBtn = $("notificationTestBtn");
+  const notificationTestStatus = $("notificationTestStatus");
+  function stopNotificationTest(message) {
+    if (notificationTestHandle) clearInterval(notificationTestHandle);
+    notificationTestHandle = null;
+    notificationTestBtn.textContent = "Start 15-second notification test";
+    if (message) notificationTestStatus.textContent = message;
+  }
+  function sendTestNotification() {
+    try {
+      const notification = new Notification("Driver Hours Tracker test", {
+        body: `Test notification sent at ${new Date().toLocaleTimeString()}`,
+      });
+      setTimeout(() => notification.close(), 10000);
+      return true;
+    } catch (error) {
+      stopNotificationTest(`Could not send notification: ${error.message}`);
+      return false;
+    }
+  }
+  notificationTestBtn.addEventListener("click", async () => {
+    if (notificationTestHandle) {
+      stopNotificationTest("Notification test stopped.");
+      return;
+    }
+    notificationTestBtn.disabled = true;
+    try {
+      if (!("Notification" in window)) {
+        notificationTestStatus.textContent =
+          "This browser does not support web notifications.";
+        return;
+      }
+      if (!window.isSecureContext) {
+        notificationTestStatus.textContent =
+          "Open this page over HTTPS to test notifications on this browser.";
+        return;
+      }
+      const permission =
+        Notification.permission === "default"
+          ? await Notification.requestPermission()
+          : Notification.permission;
+      if (permission !== "granted") {
+        notificationTestStatus.textContent =
+          "Notifications are blocked. Allow them in this site's browser settings, then try again.";
+        return;
+      }
+      if (!sendTestNotification()) return;
+      notificationTestHandle = setInterval(sendTestNotification, 15000);
+      notificationTestBtn.textContent = "Stop notification test";
+      notificationTestStatus.textContent =
+        "Test started; notifications repeat every 15 seconds while this page is open.";
+    } catch (error) {
+      notificationTestStatus.textContent =
+        `Could not start notification test: ${error.message}`;
+    } finally {
+      notificationTestBtn.disabled = false;
+    }
+  });
   $("entryForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const activity = $("entryActivity").value,
@@ -494,5 +553,6 @@
   tickHandle = setInterval(render, 1000);
   window.addEventListener("beforeunload", () => {
     if (tickHandle) clearInterval(tickHandle);
+    if (notificationTestHandle) clearInterval(notificationTestHandle);
   });
 })();
