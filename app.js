@@ -5,6 +5,20 @@
   let state = loadState();
   let tickHandle = null;
   let notificationTestHandle = null;
+  let notificationTestRegistration = null;
+
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    navigator.standalone === true;
+  if (isIOS && !isStandalone) {
+    $("iosInstallPrompt").hidden = false;
+    $("notificationTestBtn").disabled = true;
+    $("notificationTestStatus").textContent =
+      "Add this app to your Home Screen before enabling notifications.";
+  }
 
   function loadState() {
     try {
@@ -346,15 +360,20 @@
   function stopNotificationTest(message) {
     if (notificationTestHandle) clearInterval(notificationTestHandle);
     notificationTestHandle = null;
+    notificationTestRegistration = null;
     notificationTestBtn.textContent = "Start 15-second notification test";
     if (message) notificationTestStatus.textContent = message;
   }
-  function sendTestNotification() {
+  async function sendTestNotification() {
     try {
-      const notification = new Notification("Driver Hours Tracker test", {
-        body: `Test notification sent at ${new Date().toLocaleTimeString()}`,
-      });
-      setTimeout(() => notification.close(), 10000);
+      await notificationTestRegistration.showNotification(
+        "Driver Hours Tracker test",
+        {
+          body: `Test notification sent at ${new Date().toLocaleTimeString()}`,
+          tag: "driver-hours-notification-test",
+          renotify: true,
+        },
+      );
       return true;
     } catch (error) {
       stopNotificationTest(`Could not send notification: ${error.message}`);
@@ -368,9 +387,9 @@
     }
     notificationTestBtn.disabled = true;
     try {
-      if (!("Notification" in window)) {
+      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
         notificationTestStatus.textContent =
-          "This browser does not support web notifications.";
+          "This browser does not support service-worker notifications.";
         return;
       }
       if (!window.isSecureContext) {
@@ -387,8 +406,13 @@
           "Notifications are blocked. Allow them in this site's browser settings, then try again.";
         return;
       }
-      if (!sendTestNotification()) return;
-      notificationTestHandle = setInterval(sendTestNotification, 15000);
+      notificationTestRegistration =
+        await navigator.serviceWorker.register("./sw.js");
+      await navigator.serviceWorker.ready;
+      if (!(await sendTestNotification())) return;
+      notificationTestHandle = setInterval(() => {
+        void sendTestNotification();
+      }, 15000);
       notificationTestBtn.textContent = "Stop notification test";
       notificationTestStatus.textContent =
         "Test started; notifications repeat every 15 seconds while this page is open.";

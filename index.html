@@ -4,7 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#14243b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="default"
+    />
+    <meta name="apple-mobile-web-app-title" content="Driver Hours" />
     <title>Driver Hours Tracker</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="icon" type="image/png" href="./icon-192.png" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -74,6 +83,10 @@
       </div>
     </header>
     <main class="container">
+      <div id="iosInstallPrompt" class="alert info" role="status" hidden>
+        To enable notifications on iPhone or iPad, tap Share, choose Add to
+        Home Screen, then open the installed app.
+      </div>
       <section>
         <div class="panel">
           <div class="current-activity">
